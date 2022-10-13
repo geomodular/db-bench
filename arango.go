@@ -292,20 +292,23 @@ func createConnectedPairs(ctx context.Context, db driver.Database, documentColle
 
 	var documents []arangoArtifact
 
+	tm := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+
 	for i := 0; i < n; i++ {
 		artifactFrom := arangoArtifact{
 			Name:        fmt.Sprintf("artifact-from-%d", i),
 			Description: fmt.Sprintf("description-%d", i),
-			CreateTime:  time.Now(),
+			CreateTime:  tm,
 		}
 
 		artifactTo := arangoArtifact{
 			Name:        fmt.Sprintf("artifact-to-%d", i),
 			Description: fmt.Sprintf("description-%d", i),
-			CreateTime:  time.Now(),
+			CreateTime:  tm,
 		}
 
 		documents = append(documents, artifactFrom, artifactTo)
+		tm = tm.AddDate(0, 0, 1)
 	}
 
 	documentMetas, _, err := documentCol.CreateDocuments(ctx, documents)
@@ -357,6 +360,33 @@ func createConnectedPairs(ctx context.Context, db driver.Database, documentColle
 func queryAllArangoPairs(ctx context.Context, db driver.Database, documentCollection, edgeCollection string) (int64, error) {
 
 	queryString := fmt.Sprintf("FOR d IN %s FOR v IN OUTBOUND d._id %s RETURN v", documentCollection, edgeCollection)
+	newCTX := driver.WithQueryCount(ctx)
+	cursor, err := db.Query(newCTX, queryString, nil)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed querying database")
+	}
+	defer cursor.Close()
+
+	for {
+		var document arangoArtifact
+
+		_, err := cursor.ReadDocument(newCTX, &document)
+
+		if driver.IsNoMoreDocuments(err) {
+			break
+		}
+
+		if err != nil {
+			return 0, errors.Wrap(err, "failed reading document")
+		}
+	}
+
+	return cursor.Count(), nil
+}
+
+func queryAllArangoPairsOneYear(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, year int) (int64, error) {
+
+	queryString := fmt.Sprintf("FOR d IN %s FOR v IN OUTBOUND d._id %s FILTER DATE_YEAR(v.create_time) == %d RETURN v", documentCollection, edgeCollection, year)
 	newCTX := driver.WithQueryCount(ctx)
 	cursor, err := db.Query(newCTX, queryString, nil)
 	if err != nil {
