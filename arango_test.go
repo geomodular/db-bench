@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/arangodb/go-driver"
 	"github.com/stretchr/testify/suite"
-	"sort"
 	"testing"
 )
 
@@ -333,25 +332,7 @@ func (s *arangoSuite) Test21_QueryNeighbour9999() {
 }
 
 func (s *arangoSuite) HandleStats(suiteName string, stats *suite.SuiteInformation) {
-
-	s.T().Logf("=== %s", suiteName)
-
-	keys := make([]string, 0, len(stats.TestStats))
-	for k := range stats.TestStats {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	var total float64
-
-	for _, k := range keys {
-		stat := stats.TestStats[k]
-		duration := stat.End.Sub(stat.Start)
-		s.T().Logf("%s: %d ms (%.3f s)", k, duration.Milliseconds(), duration.Seconds())
-		total += duration.Seconds()
-	}
-
-	s.T().Logf("total: %.3f s", total)
+	printStats(s.T(), suiteName, stats)
 }
 
 func TestArangoSuite(t *testing.T) {
