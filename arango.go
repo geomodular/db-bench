@@ -20,6 +20,7 @@ type arangoArtifact struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	CreateTime  time.Time `json:"create_time"`
+	Item        int       `json:"item"`
 }
 
 type arangoEdge struct {
@@ -344,7 +345,7 @@ func createConnectedPairs(ctx context.Context, db driver.Database, documentColle
 		edges = append(edges, edge)
 	}
 
-	edgesMeta, _, err := edgeCol.CreateDocuments(ctx, edges)
+	edgeMetas, _, err := edgeCol.CreateDocuments(ctx, edges)
 	if err != nil {
 		return nil, nil, 0, 0, errors.Wrap(err, "failed creating edge")
 	}
@@ -354,7 +355,7 @@ func createConnectedPairs(ctx context.Context, db driver.Database, documentColle
 		return nil, nil, 0, 0, errors.Wrap(err, "failed counting edges")
 	}
 
-	return documentMetas.Keys(), edgesMeta.Keys(), documentCount, edgeCount, nil
+	return documentMetas.Keys(), edgeMetas.Keys(), documentCount, edgeCount, nil
 }
 
 func queryAllArangoPairs(ctx context.Context, db driver.Database, documentCollection, edgeCollection string) (int64, error) {
@@ -425,6 +426,7 @@ func newChain(documentCollection string, size int) ([]arangoArtifact, []arangoEd
 		Key:         key.String(),
 		Name:        "artifact-0",
 		Description: "description-0",
+		Item:        1,
 		CreateTime:  time.Now(),
 	}
 
@@ -440,6 +442,7 @@ func newChain(documentCollection string, size int) ([]arangoArtifact, []arangoEd
 			Key:         key.String(),
 			Name:        fmt.Sprintf("artifact-%d", i+1),
 			Description: fmt.Sprintf("description-%d", i+1),
+			Item:        1,
 			CreateTime:  time.Now(),
 		}
 		edge := arangoEdge{
@@ -495,7 +498,7 @@ func createArangoChain(ctx context.Context, db driver.Database, documentCollecti
 		return nil, nil, 0, 0, errors.Wrap(err, "failed getting collection")
 	}
 
-	edgesMeta, _, err := edgeCol.CreateDocuments(ctx, edges)
+	edgeMetas, _, err := edgeCol.CreateDocuments(ctx, edges)
 	if err != nil {
 		return nil, nil, 0, 0, errors.Wrap(err, "failed creating edge")
 	}
@@ -505,7 +508,7 @@ func createArangoChain(ctx context.Context, db driver.Database, documentCollecti
 		return nil, nil, 0, 0, errors.Wrap(err, "failed counting edges")
 	}
 
-	return documentMetas.Keys(), edgesMeta.Keys(), documentCount, edgeCount, nil
+	return documentMetas.Keys(), edgeMetas.Keys(), documentCount, edgeCount, nil
 }
 
 func queryArangoNeighbour(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, key string, index int) (arangoArtifact, error) {
@@ -530,4 +533,135 @@ func queryArangoNeighbour(ctx context.Context, db driver.Database, documentColle
 	}
 
 	return document, nil
+}
+
+func sumArangoChainNeighbourItems(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, key string, index int) (int, error) {
+	queryString := fmt.Sprintf("FOR d IN 0..%d OUTBOUND '%s/%s' %s COLLECT item = d.item INTO g RETURN SUM(g[*].d.item)", index, documentCollection, key, edgeCollection)
+	newCTX := driver.WithQueryCount(ctx)
+	cursor, err := db.Query(newCTX, queryString, nil)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed querying database")
+	}
+	defer cursor.Close()
+
+	var length int
+
+	_, err = cursor.ReadDocument(newCTX, &length)
+
+	if driver.IsNoMoreDocuments(err) {
+		return 0, errors.New("no document found by query")
+	}
+
+	if err != nil {
+		return 0, errors.Wrap(err, "failed reading document")
+	}
+
+	return length, nil
+}
+
+// createArangoNeighbours creates one parents and n neighbours (direct connection).
+func createArangoNeighbours(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, n int) ([]string, []string, int64, int64, error) {
+
+	// Document handling.
+
+	key, err := uuid.NewUUID()
+	if err != nil {
+		return nil, nil, 0, 0, errors.Wrap(err, "failed creating uuid")
+	}
+	tm := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	parent := arangoArtifact{
+		Key:         key.String(),
+		Name:        fmt.Sprintf("artifact-0"),
+		Description: fmt.Sprintf("description-0"),
+		CreateTime:  tm,
+	}
+
+	documents := []arangoArtifact{parent}
+	var edges []arangoEdge
+
+	for i := 0; i < n-1; i++ {
+		tm = tm.AddDate(0, 0, 1)
+
+		key, err := uuid.NewUUID()
+		if err != nil {
+			return nil, nil, 0, 0, errors.Wrap(err, "failed creating uuid")
+		}
+
+		document := arangoArtifact{
+			Key:         key.String(),
+			Name:        fmt.Sprintf("artifact-%d", i+1),
+			Description: fmt.Sprintf("description-%d", i+1),
+			CreateTime:  tm,
+		}
+
+		edge := arangoEdge{
+			From: fmt.Sprintf("%s/%s", documentCollection, parent.Key),
+			To:   fmt.Sprintf("%s/%s", documentCollection, document.Key),
+			Body: fmt.Sprintf("body-%d", i),
+		}
+
+		documents = append(documents, document)
+		edges = append(edges, edge)
+	}
+
+	documentCol, err := db.Collection(ctx, documentCollection)
+	if err != nil {
+		return nil, nil, 0, 0, errors.Wrap(err, "failed getting collection")
+	}
+
+	documentMetas, _, err := documentCol.CreateDocuments(ctx, documents)
+	if err != nil {
+		return nil, nil, 0, 0, errors.Wrap(err, "failed creating document")
+	}
+
+	documentCount, err := documentCol.Count(ctx)
+	if err != nil {
+		return nil, nil, 0, 0, errors.Wrap(err, "failed counting documents")
+	}
+
+	// Edge handling.
+
+	edgeCol, err := db.Collection(ctx, edgeCollection)
+	if err != nil {
+		return nil, nil, 0, 0, errors.Wrap(err, "failed getting collection")
+	}
+
+	edgeMetas, _, err := edgeCol.CreateDocuments(ctx, edges)
+	if err != nil {
+		return nil, nil, 0, 0, errors.Wrap(err, "failed creating edge")
+	}
+
+	edgeCount, err := edgeCol.Count(ctx)
+	if err != nil {
+		return nil, nil, 0, 0, errors.Wrap(err, "failed counting edges")
+	}
+
+	return documentMetas.Keys(), edgeMetas.Keys(), documentCount, edgeCount, nil
+}
+
+func queryArangoSortedNeighbours(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, key string) (int64, error) {
+	queryString := fmt.Sprintf("FOR d IN OUTBOUND '%s/%s' %s SORT d.name RETURN d", documentCollection, key, edgeCollection)
+	newCTX := driver.WithQueryCount(ctx)
+	cursor, err := db.Query(newCTX, queryString, nil)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed querying database")
+	}
+	defer cursor.Close()
+
+	for {
+		var document arangoArtifact
+
+		_, err := cursor.ReadDocument(newCTX, &document)
+
+		if driver.IsNoMoreDocuments(err) {
+			break
+		}
+
+		if err != nil {
+			return 0, errors.Wrap(err, "failed reading document")
+		}
+	}
+
+	return cursor.Count(), nil
 }
