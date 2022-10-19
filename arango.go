@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"math/rand"
+	"strings"
 	"time"
 )
 
@@ -254,9 +255,13 @@ func updateBulkArangoDocuments(ctx context.Context, db driver.Database, collecti
 	return len(metas.Keys()), nil
 }
 
+func keysToArangoArray(keys []string) string {
+	return "\"" + strings.Join(keys, "\",\"") + "\""
+}
+
 func queryArangoDocuments(ctx context.Context, db driver.Database, collection string, keys []string) (int64, error) {
 
-	queryString := fmt.Sprintf("FOR d IN %s RETURN d", collection)
+	queryString := fmt.Sprintf("FOR d IN %s FILTER d._key IN [%s] RETURN d", collection, keysToArangoArray(keys))
 	newCTX := driver.WithQueryCount(ctx)
 	cursor, err := db.Query(newCTX, queryString, nil)
 	if err != nil {
