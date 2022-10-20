@@ -204,51 +204,79 @@ func (s *postgresSuite) Test15_QueryAllConnectedPairsOneYear10000() {
 }
 
 func (s *postgresSuite) Test16_Chain1x10000() {
-	s.T().Skip("not implemented")
+
+	artifactIDs, edgeIDs, artifactCount, edgeCount, err := createPostgresChain(s.db, 10000)
+	s.Require().NoError(err)
+	s.EqualValues(10000, artifactCount)
+	s.EqualValues(9999, edgeCount)
+
+	s.artifactIDsToCleanNow = artifactIDs
+	s.edgeIDsToCleanNow = edgeIDs
 }
 
 func (s *postgresSuite) Test17_QueryNeighbourInChain10() {
-	s.T().Skip("not easily possible in postgres")
+	s.T().Skip("use recursive query evaluation")
 }
 
 func (s *postgresSuite) Test18_QueryNeighbourInChain100() {
-	s.T().Skip("not easily possible in postgres")
+	s.T().Skip("use recursive query evaluation")
 }
 
 func (s *postgresSuite) Test19_QueryNeighbourInChain1000() {
-	s.T().Skip("not easily possible in postgres")
+	s.T().Skip("use recursive query evaluation")
 }
 
 func (s *postgresSuite) Test20_QueryNeighbourInChain2000() {
-	s.T().Skip("not easily possible in postgres")
+	s.T().Skip("use recursive query evaluation")
 }
 
 func (s *postgresSuite) Test21_QueryNeighbourInChain5000() {
-	s.T().Skip("not easily possible in postgres")
+	s.T().Skip("use recursive query evaluation")
 }
 
 func (s *postgresSuite) Test22_QueryNeighbourInChain7000() {
-	s.T().Skip("not easily possible in postgres")
+	s.T().Skip("use recursive query evaluation")
 }
 
 func (s *postgresSuite) Test23_SumChainItems5000() {
-	s.T().Skip("not easily possible in postgres")
+	s.T().Skip("use recursive query evaluation")
 }
 
 func (s *postgresSuite) Test24_CreateNeighbours100() {
-	s.T().Skip("not implemented")
+	artifactIDs, edgeIDs, artifactCount, edgeCount, err := createPostgresNeighbours(s.db, 100)
+	s.Require().NoError(err)
+	s.EqualValues(100, artifactCount)
+	s.EqualValues(99, edgeCount)
+
+	s.artifactIDsToCleanNow = artifactIDs
+	s.edgeIDsToCleanNow = edgeIDs
 }
 
 func (s *postgresSuite) Test25_CreateNeighbours1000() {
-	s.T().Skip("not implemented")
+	artifactIDs, edgeIDs, artifactCount, edgeCount, err := createPostgresNeighbours(s.db, 1000)
+	s.Require().NoError(err)
+	s.EqualValues(1000, artifactCount)
+	s.EqualValues(999, edgeCount)
+
+	s.artifactIDsToCleanNow = artifactIDs
+	s.edgeIDsToCleanNow = edgeIDs
 }
 
 func (s *postgresSuite) Test26_CreateNeighbours10000() {
-	s.T().Skip("not implemented")
+	artifactIDs, edgeIDs, artifactCount, edgeCount, err := createPostgresNeighbours(s.db, 10000)
+	s.Require().NoError(err)
+	s.EqualValues(10000, artifactCount)
+	s.EqualValues(9999, edgeCount)
+
+	s.artifactIDsToCleanLater = artifactIDs
+	s.edgeIDsToCleanLater = edgeIDs
 }
 
 func (s *postgresSuite) Test27_QueryArangoSortedNeighbours10000() {
-	s.T().Skip("not implemented")
+	count, err := queryPostgresSortedNeighbours(s.db, s.artifactIDsToCleanLater[0])
+	s.Require().NoError(err)
+	s.EqualValues(9999, count)
+
 }
 
 func (s *postgresSuite) HandleStats(suiteName string, stats *suite.SuiteInformation) {

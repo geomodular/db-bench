@@ -314,3 +314,121 @@ func queryAllPostgresPairsOneYear(db *sql.DB, year int) (int, error) {
 
 	return count, nil
 }
+
+func createPostgresChain(db *sql.DB, n int) ([]string, []string, int, int, error) {
+
+	var stmt string
+
+	lastID, _ := uuid.NewUUID()
+	stmt += fmt.Sprintf("INSERT INTO artifacts(id, \"name\", description) VALUES ('%s', 'name-0', 'description-0');", lastID)
+
+	artifactIDs := []string{lastID.String()}
+	var edgeIDs []string
+
+	for i := 0; i < n-1; i++ {
+		edgeID, _ := uuid.NewUUID()
+		artifactID, _ := uuid.NewUUID()
+		name := fmt.Sprintf("name-%d", i+1)
+		desc := fmt.Sprintf("description-%d", i+1)
+		body := fmt.Sprintf("body-%d", i)
+
+		stmt += fmt.Sprintf("INSERT INTO artifacts(id, \"name\", description) VALUES ('%s', '%s', '%s');", artifactID, name, desc)
+		stmt += fmt.Sprintf("INSERT INTO edges(id, \"from\", \"to\", body) VALUES ('%s', '%s', '%s', '%s');", edgeID, lastID, artifactID, body)
+
+		artifactIDs = append(artifactIDs, artifactID.String())
+		edgeIDs = append(edgeIDs, edgeID.String())
+
+		lastID = artifactID
+	}
+
+	_, err := db.Exec(stmt)
+	if err != nil {
+		return nil, nil, 0, 0, errors.Wrap(err, "failed inserting into table")
+	}
+
+	var artifactCounter int
+	var edgeCounter int
+
+	err = db.QueryRow("SELECT COUNT(*) FROM artifacts;").Scan(&artifactCounter)
+	if err != nil {
+		return nil, nil, 0, 0, errors.Wrap(err, "failed counting rows in artifact table")
+	}
+
+	err = db.QueryRow("SELECT COUNT(*) FROM edges;").Scan(&edgeCounter)
+	if err != nil {
+		return nil, nil, 0, 0, errors.Wrap(err, "failed counting rows in edge table")
+	}
+
+	return artifactIDs, edgeIDs, artifactCounter, edgeCounter, nil
+}
+
+func createPostgresNeighbours(db *sql.DB, n int) ([]string, []string, int, int, error) {
+
+	var stmt string
+
+	firstID, _ := uuid.NewUUID()
+	stmt += fmt.Sprintf("INSERT INTO artifacts(id, \"name\", description) VALUES ('%s', 'name-0', 'description-0');", firstID)
+
+	artifactIDs := []string{firstID.String()}
+	var edgeIDs []string
+
+	for i := 0; i < n-1; i++ {
+		edgeID, _ := uuid.NewUUID()
+		artifactID, _ := uuid.NewUUID()
+		name := fmt.Sprintf("name-%d", i+1)
+		desc := fmt.Sprintf("description-%d", i+1)
+		body := fmt.Sprintf("body-%d", i)
+
+		stmt += fmt.Sprintf("INSERT INTO artifacts(id, \"name\", description) VALUES ('%s', '%s', '%s');", artifactID, name, desc)
+		stmt += fmt.Sprintf("INSERT INTO edges(id, \"from\", \"to\", body) VALUES ('%s', '%s', '%s', '%s');", edgeID, firstID, artifactID, body)
+
+		artifactIDs = append(artifactIDs, artifactID.String())
+		edgeIDs = append(edgeIDs, edgeID.String())
+	}
+
+	_, err := db.Exec(stmt)
+	if err != nil {
+		return nil, nil, 0, 0, errors.Wrap(err, "failed inserting into table")
+	}
+
+	var artifactCounter int
+	var edgeCounter int
+
+	err = db.QueryRow("SELECT COUNT(*) FROM artifacts;").Scan(&artifactCounter)
+	if err != nil {
+		return nil, nil, 0, 0, errors.Wrap(err, "failed counting rows in artifact table")
+	}
+
+	err = db.QueryRow("SELECT COUNT(*) FROM edges;").Scan(&edgeCounter)
+	if err != nil {
+		return nil, nil, 0, 0, errors.Wrap(err, "failed counting rows in edge table")
+	}
+
+	return artifactIDs, edgeIDs, artifactCounter, edgeCounter, nil
+}
+
+func queryPostgresSortedNeighbours(db *sql.DB, id string) (int, error) {
+
+	// NOTE: Controversial comparing to Arango.
+
+	stmt := fmt.Sprintf("SELECT a.name FROM edges e INNER JOIN artifacts a ON e.to = a.id WHERE e.from = '%s' GROUP BY a.name;", id)
+
+	rows, err := db.Query(stmt)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed reading table")
+	}
+	defer rows.Close()
+
+	var count int
+	for rows.Next() {
+		var name string
+
+		err = rows.Scan(&name)
+		if err != nil {
+			return 0, errors.Wrap(err, "failed scanning variables")
+		}
+		count += 1
+	}
+
+	return count, nil
+}
