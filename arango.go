@@ -105,7 +105,7 @@ func createArangoEdgeCollection(db driver.Database, collection string) error {
 	return nil
 }
 
-func createArangoDocuments(ctx context.Context, db driver.Database, collection string, n int) ([]string, int64, error) {
+func createArangoDocuments(ctx context.Context, db driver.Database, collection string, n int) ([]string, int, error) {
 
 	col, err := db.Collection(ctx, collection)
 	if err != nil {
@@ -136,10 +136,10 @@ func createArangoDocuments(ctx context.Context, db driver.Database, collection s
 		return nil, 0, errors.Wrap(err, "failed counting documents")
 	}
 
-	return keys, count, nil
+	return keys, int(count), nil
 }
 
-func createBulkArangoDocuments(ctx context.Context, db driver.Database, collection string, n int) ([]string, int64, error) {
+func createBulkArangoDocuments(ctx context.Context, db driver.Database, collection string, n int) ([]string, int, error) {
 
 	col, err := db.Collection(ctx, collection)
 	if err != nil {
@@ -167,7 +167,7 @@ func createBulkArangoDocuments(ctx context.Context, db driver.Database, collecti
 		return nil, 0, errors.Wrap(err, "failed counting documents")
 	}
 
-	return metaSlice.Keys(), count, nil
+	return metaSlice.Keys(), int(count), nil
 }
 
 func readOneArangoDocument(ctx context.Context, db driver.Database, collection string, key string) error {
@@ -259,7 +259,7 @@ func keysToArangoArray(keys []string) string {
 	return "\"" + strings.Join(keys, "\",\"") + "\""
 }
 
-func queryArangoDocuments(ctx context.Context, db driver.Database, collection string, keys []string) (int64, error) {
+func queryArangoDocuments(ctx context.Context, db driver.Database, collection string, keys []string) (int, error) {
 
 	queryString := fmt.Sprintf("FOR d IN %s FILTER d._key IN [%s] RETURN d", collection, keysToArangoArray(keys))
 	newCTX := driver.WithQueryCount(ctx)
@@ -283,11 +283,11 @@ func queryArangoDocuments(ctx context.Context, db driver.Database, collection st
 		}
 	}
 
-	return cursor.Count(), nil
+	return int(cursor.Count()), nil
 }
 
 // createConnectPairs creates an N pairs. Pair is a document connected with an edge: Doc1 --> Edge --> Doc2.
-func createConnectedPairs(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, n int) ([]string, []string, int64, int64, error) {
+func createConnectedPairs(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, n int) ([]string, []string, int, int, error) {
 
 	// Document handling.
 
@@ -360,10 +360,10 @@ func createConnectedPairs(ctx context.Context, db driver.Database, documentColle
 		return nil, nil, 0, 0, errors.Wrap(err, "failed counting edges")
 	}
 
-	return documentMetas.Keys(), edgeMetas.Keys(), documentCount, edgeCount, nil
+	return documentMetas.Keys(), edgeMetas.Keys(), int(documentCount), int(edgeCount), nil
 }
 
-func queryAllArangoPairs(ctx context.Context, db driver.Database, documentCollection, edgeCollection string) (int64, error) {
+func queryAllArangoPairs(ctx context.Context, db driver.Database, documentCollection, edgeCollection string) (int, error) {
 
 	queryString := fmt.Sprintf("FOR d IN %s FOR v IN OUTBOUND d._id %s RETURN v", documentCollection, edgeCollection)
 	newCTX := driver.WithQueryCount(ctx)
@@ -387,10 +387,10 @@ func queryAllArangoPairs(ctx context.Context, db driver.Database, documentCollec
 		}
 	}
 
-	return cursor.Count(), nil
+	return int(cursor.Count()), nil
 }
 
-func queryAllArangoPairsOneYear(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, year int) (int64, error) {
+func queryAllArangoPairsOneYear(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, year int) (int, error) {
 
 	queryString := fmt.Sprintf("FOR d IN %s FOR v IN OUTBOUND d._id %s FILTER DATE_YEAR(v.create_time) == %d RETURN v", documentCollection, edgeCollection, year)
 	newCTX := driver.WithQueryCount(ctx)
@@ -414,7 +414,7 @@ func queryAllArangoPairsOneYear(ctx context.Context, db driver.Database, documen
 		}
 	}
 
-	return cursor.Count(), nil
+	return int(cursor.Count()), nil
 }
 
 func newChain(documentCollection string, size int) ([]arangoArtifact, []arangoEdge, error) {
@@ -464,7 +464,7 @@ func newChain(documentCollection string, size int) ([]arangoArtifact, []arangoEd
 }
 
 // createArangoChain creates a chain of documents connected by edges. You can specify the chain size and number of chains.
-func createArangoChain(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, size, n int) ([]string, []string, int64, int64, error) {
+func createArangoChain(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, size, n int) ([]string, []string, int, int, error) {
 
 	// Document handling.
 
@@ -513,7 +513,7 @@ func createArangoChain(ctx context.Context, db driver.Database, documentCollecti
 		return nil, nil, 0, 0, errors.Wrap(err, "failed counting edges")
 	}
 
-	return documentMetas.Keys(), edgeMetas.Keys(), documentCount, edgeCount, nil
+	return documentMetas.Keys(), edgeMetas.Keys(), int(documentCount), int(edgeCount), nil
 }
 
 func queryArangoNeighbour(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, key string, index int) (arangoArtifact, error) {
@@ -565,7 +565,7 @@ func sumArangoChainNeighbourItems(ctx context.Context, db driver.Database, docum
 }
 
 // createArangoNeighbours creates one parents and n neighbours (direct connection).
-func createArangoNeighbours(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, n int) ([]string, []string, int64, int64, error) {
+func createArangoNeighbours(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, n int) ([]string, []string, int, int, error) {
 
 	// Document handling.
 
@@ -642,10 +642,10 @@ func createArangoNeighbours(ctx context.Context, db driver.Database, documentCol
 		return nil, nil, 0, 0, errors.Wrap(err, "failed counting edges")
 	}
 
-	return documentMetas.Keys(), edgeMetas.Keys(), documentCount, edgeCount, nil
+	return documentMetas.Keys(), edgeMetas.Keys(), int(documentCount), int(edgeCount), nil
 }
 
-func queryArangoSortedNeighbours(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, key string) (int64, error) {
+func queryArangoSortedNeighbours(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, key string) (int, error) {
 	queryString := fmt.Sprintf("FOR d IN OUTBOUND '%s/%s' %s SORT d.name RETURN d", documentCollection, key, edgeCollection)
 	newCTX := driver.WithQueryCount(ctx)
 	cursor, err := db.Query(newCTX, queryString, nil)
@@ -668,5 +668,5 @@ func queryArangoSortedNeighbours(ctx context.Context, db driver.Database, docume
 		}
 	}
 
-	return cursor.Count(), nil
+	return int(cursor.Count()), nil
 }
