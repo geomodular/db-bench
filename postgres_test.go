@@ -203,43 +203,69 @@ func (s *postgresSuite) Test15_QueryAllConnectedPairsOneYear10000() {
 	s.artifactIDsToCleanLater = nil
 }
 
-func (s *postgresSuite) Test16_Chain1x10000() {
+func (s *postgresSuite) Test16_CreateChain1x10000() {
 
 	artifactIDs, edgeIDs, artifactCount, edgeCount, err := createPostgresChain(s.db, 10000)
 	s.Require().NoError(err)
 	s.EqualValues(10000, artifactCount)
 	s.EqualValues(9999, edgeCount)
 
-	s.artifactIDsToCleanNow = artifactIDs
-	s.edgeIDsToCleanNow = edgeIDs
+	s.artifactIDsToCleanLater = artifactIDs
+	s.edgeIDsToCleanLater = edgeIDs
 }
 
 func (s *postgresSuite) Test17_QueryNeighbourInChain10() {
-	s.T().Skip("use recursive query evaluation")
+	id, name, err := queryPostgresNeighbourN(s.db, s.artifactIDsToCleanLater[0], 10)
+	s.Require().NoError(err)
+	s.EqualValues("name-10", name)
+	s.EqualValues(s.artifactIDsToCleanLater[10], id)
 }
 
 func (s *postgresSuite) Test18_QueryNeighbourInChain100() {
-	s.T().Skip("use recursive query evaluation")
+	id, name, err := queryPostgresNeighbourN(s.db, s.artifactIDsToCleanLater[0], 100)
+	s.Require().NoError(err)
+	s.EqualValues("name-100", name)
+	s.EqualValues(s.artifactIDsToCleanLater[100], id)
 }
 
 func (s *postgresSuite) Test19_QueryNeighbourInChain1000() {
-	s.T().Skip("use recursive query evaluation")
+	id, name, err := queryPostgresNeighbourN(s.db, s.artifactIDsToCleanLater[0], 1000)
+	s.Require().NoError(err)
+	s.EqualValues("name-1000", name)
+	s.EqualValues(s.artifactIDsToCleanLater[1000], id)
 }
 
 func (s *postgresSuite) Test20_QueryNeighbourInChain2000() {
-	s.T().Skip("use recursive query evaluation")
+	id, name, err := queryPostgresNeighbourN(s.db, s.artifactIDsToCleanLater[0], 2000)
+	s.Require().NoError(err)
+	s.EqualValues("name-2000", name)
+	s.EqualValues(s.artifactIDsToCleanLater[2000], id)
 }
 
 func (s *postgresSuite) Test21_QueryNeighbourInChain5000() {
-	s.T().Skip("use recursive query evaluation")
+	id, name, err := queryPostgresNeighbourN(s.db, s.artifactIDsToCleanLater[0], 5000)
+	s.Require().NoError(err)
+	s.EqualValues("name-5000", name)
+	s.EqualValues(s.artifactIDsToCleanLater[5000], id)
 }
 
 func (s *postgresSuite) Test22_QueryNeighbourInChain7000() {
-	s.T().Skip("use recursive query evaluation")
+	id, name, err := queryPostgresNeighbourN(s.db, s.artifactIDsToCleanLater[0], 7000)
+	s.Require().NoError(err)
+	s.EqualValues("name-7000", name)
+	s.EqualValues(s.artifactIDsToCleanLater[7000], id)
 }
 
 func (s *postgresSuite) Test23_SumChainItems5000() {
-	s.T().Skip("use recursive query evaluation")
+
+	sum, err := sumPostgresNeighbourNItems(s.db, s.artifactIDsToCleanLater[0], 4999)
+	s.Require().NoError(err)
+	s.EqualValues(5000, sum)
+
+	s.edgeIDsToCleanNow = s.edgeIDsToCleanLater
+	s.artifactIDsToCleanNow = s.artifactIDsToCleanLater
+	s.edgeIDsToCleanLater = nil
+	s.artifactIDsToCleanLater = nil
 }
 
 func (s *postgresSuite) Test24_CreateNeighbours100() {
@@ -276,7 +302,6 @@ func (s *postgresSuite) Test27_QueryArangoSortedNeighbours10000() {
 	count, err := queryPostgresSortedNeighbours(s.db, s.artifactIDsToCleanLater[0])
 	s.Require().NoError(err)
 	s.EqualValues(9999, count)
-
 }
 
 func (s *postgresSuite) HandleStats(suiteName string, stats *suite.SuiteInformation) {

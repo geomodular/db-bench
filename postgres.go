@@ -26,6 +26,7 @@ func createPostgresTestingTables(db *sql.DB) error {
     id           UUID PRIMARY KEY,
     "name"       TEXT NOT NULL,
     description  TEXT,
+    item         INTEGER DEFAULT 1,
     create_time  TIMESTAMP NOT NULL DEFAULT CLOCK_TIMESTAMP()
 );`
 
@@ -360,6 +361,56 @@ func createPostgresChain(db *sql.DB, n int) ([]string, []string, int, int, error
 	}
 
 	return artifactIDs, edgeIDs, artifactCounter, edgeCounter, nil
+}
+
+func queryPostgresNeighbourN(db *sql.DB, startingID string, i int) (string, string, error) {
+
+	// NOTE: Controversial comparing to Arango.
+
+	stmt := `
+WITH RECURSIVE neighbours(id, name, n) as (
+    SELECT id, name, 0 FROM artifacts WHERE id = '%s'
+UNION
+    SELECT e.to, a.name, n+1 FROM edges e INNER JOIN neighbours n ON e.from = n.id INNER JOIN artifacts a ON e.to = a.id WHERE n < %d
+) SELECT * FROM neighbours LIMIT 1 OFFSET %d;
+`
+
+	stmt = fmt.Sprintf(stmt, startingID, i, i)
+
+	var id string
+	var name string
+	var n int
+
+	err := db.QueryRow(stmt).Scan(&id, &name, &n)
+	if err != nil {
+		return "", "", errors.Wrap(err, "failed searching in chain")
+	}
+
+	return id, name, nil
+}
+
+func sumPostgresNeighbourNItems(db *sql.DB, startingID string, i int) (int, error) {
+
+	// NOTE: Controversial comparing to Arango.
+
+	stmt := `
+WITH RECURSIVE neighbours(id, name, item, n) as (
+    SELECT id, name, item, 0 FROM artifacts WHERE id = '%s'
+UNION
+    SELECT e.to, a.name, a.item, n+1 FROM edges e INNER JOIN neighbours n ON e.from = n.id INNER JOIN artifacts a ON e.to = a.id WHERE n < %d
+) SELECT sum(item) FROM neighbours;
+`
+
+	stmt = fmt.Sprintf(stmt, startingID, i)
+
+	var sum int
+
+	err := db.QueryRow(stmt).Scan(&sum)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed searching in chain")
+	}
+
+	return sum, nil
 }
 
 func createPostgresNeighbours(db *sql.DB, n int) ([]string, []string, int, int, error) {

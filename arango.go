@@ -516,7 +516,7 @@ func createArangoChain(ctx context.Context, db driver.Database, documentCollecti
 	return documentMetas.Keys(), edgeMetas.Keys(), int(documentCount), int(edgeCount), nil
 }
 
-func queryArangoNeighbour(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, key string, index int) (arangoArtifact, error) {
+func queryArangoNeighbourN(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, key string, index int) (arangoArtifact, error) {
 	queryString := fmt.Sprintf("FOR v IN %d..%d OUTBOUND '%s/%s' %s RETURN v", index, index, documentCollection, key, edgeCollection)
 	newCTX := driver.WithQueryCount(ctx)
 	cursor, err := db.Query(newCTX, queryString, nil)
@@ -540,7 +540,7 @@ func queryArangoNeighbour(ctx context.Context, db driver.Database, documentColle
 	return document, nil
 }
 
-func sumArangoChainNeighbourItems(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, key string, index int) (int, error) {
+func sumArangoNeighbourNItems(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, key string, index int) (int, error) {
 	queryString := fmt.Sprintf("FOR d IN 0..%d OUTBOUND '%s/%s' %s COLLECT item = d.item INTO g RETURN SUM(g[*].d.item)", index, documentCollection, key, edgeCollection)
 	newCTX := driver.WithQueryCount(ctx)
 	cursor, err := db.Query(newCTX, queryString, nil)
