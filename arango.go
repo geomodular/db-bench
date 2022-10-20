@@ -286,8 +286,8 @@ func queryArangoDocuments(ctx context.Context, db driver.Database, collection st
 	return int(cursor.Count()), nil
 }
 
-// createConnectPairs creates an N pairs. Pair is a document connected with an edge: Doc1 --> Edge --> Doc2.
-func createConnectedPairs(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, n int) ([]string, []string, int, int, error) {
+// createArangoConnectPairs creates an N pairs. Pair is a document connected with an edge: Doc1 --> Edge --> Doc2.
+func createArangoConnectedPairs(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, n int) ([]string, []string, int, int, error) {
 
 	// Document handling.
 

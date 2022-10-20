@@ -21,7 +21,11 @@ func printStats(t *testing.T, suiteName string, stats *suite.SuiteInformation) {
 	for _, k := range keys {
 		stat := stats.TestStats[k]
 		duration := stat.End.Sub(stat.Start)
-		t.Logf("%s: %d ms (%.3f s)", k, duration.Milliseconds(), duration.Seconds())
+		if stat.Passed && duration.Milliseconds() == 0 {
+			t.Logf("%s: SKIPPED", k)
+		} else {
+			t.Logf("%s: %d ms (%.3f s)", k, duration.Milliseconds(), duration.Seconds())
+		}
 		total += duration.Seconds()
 	}
 

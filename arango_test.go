@@ -219,7 +219,7 @@ func (s *arangoSuite) Test11_CreateConnectedPairs10() {
 
 	ctx := context.Background()
 
-	documentKeys, edgeKeys, documentCount, edgeCount, err := createConnectedPairs(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, 10)
+	documentKeys, edgeKeys, documentCount, edgeCount, err := createArangoConnectedPairs(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, 10)
 	s.Require().NoError(err)
 	s.EqualValues(20, documentCount-s.staticDocumentCount)
 	s.EqualValues(10, edgeCount)
@@ -232,7 +232,7 @@ func (s *arangoSuite) Test12_CreateConnectedPairs100() {
 
 	ctx := context.Background()
 
-	documentKeys, edgeKeys, documentCount, edgeCount, err := createConnectedPairs(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, 100)
+	documentKeys, edgeKeys, documentCount, edgeCount, err := createArangoConnectedPairs(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, 100)
 	s.Require().NoError(err)
 	s.EqualValues(200, documentCount-s.staticDocumentCount)
 	s.EqualValues(100, edgeCount)
@@ -245,7 +245,7 @@ func (s *arangoSuite) Test13_CreateConnectedPairs10000() {
 
 	ctx := context.Background()
 
-	documentKeys, edgeKeys, documentCount, edgeCount, err := createConnectedPairs(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, 10000)
+	documentKeys, edgeKeys, documentCount, edgeCount, err := createArangoConnectedPairs(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, 10000)
 	s.Require().NoError(err)
 	s.EqualValues(20000, documentCount-s.staticDocumentCount)
 	s.EqualValues(10000, edgeCount)
@@ -267,7 +267,7 @@ func (s *arangoSuite) Test14_QueryAllConnectedPairs10000() {
 	s.EqualValues(10000, count)
 }
 
-func (s *arangoSuite) Test15_QueryAllConnectedPaisOneYear10000() {
+func (s *arangoSuite) Test15_QueryAllConnectedPairsOneYear10000() {
 
 	if s.staticDocumentCount > documentCountNotToCycle {
 		s.T().Skip("too many documents to cycle over")
