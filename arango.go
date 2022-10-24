@@ -77,10 +77,18 @@ func createArangoDocumentCollection(db driver.Database, collection string) error
 	}
 
 	if !colExists {
-		_, err = db.CreateCollection(nil, collection, nil)
-		if err != nil {
+		if _, err := db.CreateCollection(nil, collection, nil); err != nil {
 			return errors.Wrap(err, "failed creating collection")
 		}
+	}
+
+	col, err := db.Collection(nil, collection)
+	if err != nil {
+		return errors.Wrap(err, "failed getting collection")
+	}
+
+	if _, _, err := col.EnsurePersistentIndex(nil, []string{"create_time"}, nil); err != nil {
+		return errors.Wrap(err, "failed creating persistent index")
 	}
 
 	return nil
@@ -392,7 +400,7 @@ func queryAllArangoPairs(ctx context.Context, db driver.Database, documentCollec
 
 func queryAllArangoPairsOneYear(ctx context.Context, db driver.Database, documentCollection, edgeCollection string, year int) (int, error) {
 
-	queryString := fmt.Sprintf("FOR d IN %s FOR v IN OUTBOUND d._id %s FILTER DATE_YEAR(v.create_time) == %d RETURN v", documentCollection, edgeCollection, year)
+	queryString := fmt.Sprintf("FOR d IN %s FILTER d.create_time > '%d' && d.create_time < '%d' FOR v IN OUTBOUND d._id %s RETURN v", documentCollection, year, year+1, edgeCollection)
 	newCTX := driver.WithQueryCount(ctx)
 	cursor, err := db.Query(newCTX, queryString, nil)
 	if err != nil {
