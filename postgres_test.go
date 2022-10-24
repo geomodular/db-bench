@@ -20,6 +20,7 @@ type postgresSuite struct {
 	artifactIDsToCleanLater []string
 	edgeIDsToCleanNow       []string
 	edgeIDsToCleanLater     []string
+	staticArtifactCount     int
 }
 
 func (s *postgresSuite) SetupSuite() {
@@ -30,7 +31,12 @@ func (s *postgresSuite) SetupSuite() {
 	err = CreatePostgresTestingTables(db)
 	s.Require().NoError(err)
 
+	var count int
+	err = db.QueryRow("SELECT COUNT(*) FROM artifacts;").Scan(&count)
+	s.Require().NoError(err)
+
 	s.db = db
+	s.staticArtifactCount = count
 }
 
 func (s *postgresSuite) TearDownTest() {
@@ -73,7 +79,7 @@ func (s *postgresSuite) Test01_Create10() {
 
 	ids, count, err := createPostgresArtifacts(s.db, documentCount)
 	s.Require().NoError(err)
-	s.EqualValues(documentCount, count)
+	s.EqualValues(documentCount, count-s.staticArtifactCount)
 
 	s.artifactIDsToCleanNow = ids
 }
@@ -84,7 +90,7 @@ func (s *postgresSuite) Test02_Create100() {
 
 	ids, count, err := createPostgresArtifacts(s.db, documentCount)
 	s.Require().NoError(err)
-	s.EqualValues(documentCount, count)
+	s.EqualValues(documentCount, count-s.staticArtifactCount)
 
 	s.artifactIDsToCleanNow = ids
 }
@@ -95,7 +101,7 @@ func (s *postgresSuite) Test03_Create1000() {
 
 	ids, count, err := createPostgresArtifacts(s.db, documentCount)
 	s.Require().NoError(err)
-	s.EqualValues(documentCount, count)
+	s.EqualValues(documentCount, count-s.staticArtifactCount)
 
 	s.artifactIDsToCleanNow = ids
 }
@@ -106,7 +112,7 @@ func (s *postgresSuite) Test04_BulkCreate1000() {
 
 	ids, count, err := CreateBulkPostgresArtifacts(s.db, documentCount)
 	s.Require().NoError(err)
-	s.EqualValues(documentCount, count)
+	s.EqualValues(documentCount, count-s.staticArtifactCount)
 
 	s.artifactIDsToCleanNow = ids
 }
@@ -117,7 +123,7 @@ func (s *postgresSuite) Test05_BulkCreate10000() {
 
 	ids, count, err := CreateBulkPostgresArtifacts(s.db, documentCount)
 	s.Require().NoError(err)
-	s.EqualValues(documentCount, count)
+	s.EqualValues(documentCount, count-s.staticArtifactCount)
 
 	s.artifactIDsToCleanLater = ids
 }
@@ -140,7 +146,7 @@ func (s *postgresSuite) Test08_Update10000() {
 func (s *postgresSuite) Test09_BulkUpdate10000() {
 	count, err := updateBulkPostgresArtifacts(s.db, s.artifactIDsToCleanLater)
 	s.Require().NoError(err)
-	s.EqualValues(len(s.artifactIDsToCleanLater), count)
+	s.EqualValues(len(s.artifactIDsToCleanLater), count-s.staticArtifactCount)
 }
 
 func (s *postgresSuite) Test10_QueryRead10000() {
@@ -155,7 +161,7 @@ func (s *postgresSuite) Test11_CreateConnectedPairs10() {
 
 	artifactIDs, edgeIDs, artifactCount, edgeCount, err := createPostgresConnectedPairs(s.db, 10)
 	s.Require().NoError(err)
-	s.EqualValues(20, artifactCount)
+	s.EqualValues(20, artifactCount-s.staticArtifactCount)
 	s.EqualValues(10, edgeCount)
 
 	s.artifactIDsToCleanNow = artifactIDs
@@ -166,7 +172,7 @@ func (s *postgresSuite) Test12_CreateConnectedPairs100() {
 
 	artifactIDs, edgeIDs, artifactCount, edgeCount, err := createPostgresConnectedPairs(s.db, 100)
 	s.Require().NoError(err)
-	s.EqualValues(200, artifactCount)
+	s.EqualValues(200, artifactCount-s.staticArtifactCount)
 	s.EqualValues(100, edgeCount)
 
 	s.artifactIDsToCleanNow = artifactIDs
@@ -177,7 +183,7 @@ func (s *postgresSuite) Test13_CreateConnectedPairs10000() {
 
 	artifactIDs, edgeIDs, artifactCount, edgeCount, err := createPostgresConnectedPairs(s.db, 10000)
 	s.Require().NoError(err)
-	s.EqualValues(20000, artifactCount)
+	s.EqualValues(20000, artifactCount-s.staticArtifactCount)
 	s.EqualValues(10000, edgeCount)
 
 	s.artifactIDsToCleanLater = artifactIDs
@@ -207,7 +213,7 @@ func (s *postgresSuite) Test16_CreateChain1x10000() {
 
 	artifactIDs, edgeIDs, artifactCount, edgeCount, err := createPostgresChain(s.db, 10000)
 	s.Require().NoError(err)
-	s.EqualValues(10000, artifactCount)
+	s.EqualValues(10000, artifactCount-s.staticArtifactCount)
 	s.EqualValues(9999, edgeCount)
 
 	s.artifactIDsToCleanLater = artifactIDs
@@ -271,7 +277,7 @@ func (s *postgresSuite) Test23_SumChainItems5000() {
 func (s *postgresSuite) Test24_CreateNeighbours100() {
 	artifactIDs, edgeIDs, artifactCount, edgeCount, err := createPostgresNeighbours(s.db, 100)
 	s.Require().NoError(err)
-	s.EqualValues(100, artifactCount)
+	s.EqualValues(100, artifactCount-s.staticArtifactCount)
 	s.EqualValues(99, edgeCount)
 
 	s.artifactIDsToCleanNow = artifactIDs
@@ -281,7 +287,7 @@ func (s *postgresSuite) Test24_CreateNeighbours100() {
 func (s *postgresSuite) Test25_CreateNeighbours1000() {
 	artifactIDs, edgeIDs, artifactCount, edgeCount, err := createPostgresNeighbours(s.db, 1000)
 	s.Require().NoError(err)
-	s.EqualValues(1000, artifactCount)
+	s.EqualValues(1000, artifactCount-s.staticArtifactCount)
 	s.EqualValues(999, edgeCount)
 
 	s.artifactIDsToCleanNow = artifactIDs
@@ -291,7 +297,7 @@ func (s *postgresSuite) Test25_CreateNeighbours1000() {
 func (s *postgresSuite) Test26_CreateNeighbours10000() {
 	artifactIDs, edgeIDs, artifactCount, edgeCount, err := createPostgresNeighbours(s.db, 10000)
 	s.Require().NoError(err)
-	s.EqualValues(10000, artifactCount)
+	s.EqualValues(10000, artifactCount-s.staticArtifactCount)
 	s.EqualValues(9999, edgeCount)
 
 	s.artifactIDsToCleanLater = artifactIDs
