@@ -24,10 +24,10 @@ type postgresSuite struct {
 
 func (s *postgresSuite) SetupSuite() {
 
-	db, err := initPostgres(postgresConnStr)
+	db, err := InitPostgres(postgresConnStr)
 	s.Require().NoError(err)
 
-	err = createPostgresTestingTables(db)
+	err = CreatePostgresTestingTables(db)
 	s.Require().NoError(err)
 
 	s.db = db
@@ -104,7 +104,7 @@ func (s *postgresSuite) Test04_BulkCreate1000() {
 
 	documentCount := 1000
 
-	ids, count, err := createBulkPostgresArtifacts(s.db, documentCount)
+	ids, count, err := CreateBulkPostgresArtifacts(s.db, documentCount)
 	s.Require().NoError(err)
 	s.EqualValues(documentCount, count)
 
@@ -115,7 +115,7 @@ func (s *postgresSuite) Test05_BulkCreate10000() {
 
 	documentCount := 10000
 
-	ids, count, err := createBulkPostgresArtifacts(s.db, documentCount)
+	ids, count, err := CreateBulkPostgresArtifacts(s.db, documentCount)
 	s.Require().NoError(err)
 	s.EqualValues(documentCount, count)
 

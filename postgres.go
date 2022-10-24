@@ -7,9 +7,11 @@ import (
 	"github.com/pkg/errors"
 	"math/rand"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
-func initPostgres(connStr string) (*sql.DB, error) {
+func InitPostgres(connStr string) (*sql.DB, error) {
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
@@ -19,7 +21,7 @@ func initPostgres(connStr string) (*sql.DB, error) {
 	return db, nil
 }
 
-func createPostgresTestingTables(db *sql.DB) error {
+func CreatePostgresTestingTables(db *sql.DB) error {
 
 	artifactSTMT := `CREATE TABLE IF NOT EXISTS artifacts
 (
@@ -90,7 +92,7 @@ func createPostgresArtifacts(db *sql.DB, n int) ([]string, int, error) {
 	return ids, counter, nil
 }
 
-func createBulkPostgresArtifacts(db *sql.DB, n int) ([]string, int, error) {
+func CreateBulkPostgresArtifacts(db *sql.DB, n int) ([]string, int, error) {
 
 	var stmt string
 	var ids []string
