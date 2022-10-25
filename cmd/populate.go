@@ -63,7 +63,7 @@ func run() error {
 			return errors.Wrap(err, "failed creating artifacts")
 		}
 		actual += bulkCount
-		log.Info().Int("count", actual).Float64("perc", (float64(actual)/float64(total))*100.0).Msg("status")
+		log.Info().Int("count", actual).Float64("perc", (float64(actual+rows)/float64(n))*100.0).Msg("status")
 	}
 
 	return nil
