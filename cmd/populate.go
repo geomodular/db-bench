@@ -1,8 +1,11 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
+	"fmt"
 	dbBench "github.com/geomodular/db-bench"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"os"
@@ -56,11 +59,30 @@ func run() error {
 		if actual+bulkCount > total {
 			bulkCount = total - actual
 		}
-		if _, _, err := dbBench.CreateBulkPostgresArtifacts(db, bulkCount); err != nil {
+		if err := createBulkPostgresArtifacts(db, bulkCount); err != nil {
 			return errors.Wrap(err, "failed creating artifacts")
 		}
 		actual += bulkCount
 		log.Info().Int("count", actual).Float64("perc", (float64(actual)/float64(total))*100.0).Msg("status")
+	}
+
+	return nil
+}
+
+func createBulkPostgresArtifacts(db *sql.DB, n int) error {
+
+	var stmt string
+
+	for i := 0; i < n; i++ {
+		id, _ := uuid.NewUUID()
+		name := fmt.Sprintf("name-%d", i)
+		description := fmt.Sprintf("description-%d", i)
+		stmt = stmt + fmt.Sprintf("INSERT INTO artifacts(id, \"name\", description) VALUES ('%s', '%s', '%s');", id, name, description)
+	}
+
+	_, err := db.Exec(stmt)
+	if err != nil {
+		return errors.Wrap(err, "failed inserting into table")
 	}
 
 	return nil

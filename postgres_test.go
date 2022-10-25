@@ -110,7 +110,7 @@ func (s *postgresSuite) Test04_BulkCreate1000() {
 
 	documentCount := 1000
 
-	ids, count, err := CreateBulkPostgresArtifacts(s.db, documentCount)
+	ids, count, err := createBulkPostgresArtifacts(s.db, documentCount)
 	s.Require().NoError(err)
 	s.EqualValues(documentCount, count-s.staticArtifactCount)
 
@@ -121,7 +121,7 @@ func (s *postgresSuite) Test05_BulkCreate10000() {
 
 	documentCount := 10000
 
-	ids, count, err := CreateBulkPostgresArtifacts(s.db, documentCount)
+	ids, count, err := createBulkPostgresArtifacts(s.db, documentCount)
 	s.Require().NoError(err)
 	s.EqualValues(documentCount, count-s.staticArtifactCount)
 

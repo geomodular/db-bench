@@ -92,7 +92,7 @@ func createPostgresArtifacts(db *sql.DB, n int) ([]string, int, error) {
 	return ids, counter, nil
 }
 
-func CreateBulkPostgresArtifacts(db *sql.DB, n int) ([]string, int, error) {
+func createBulkPostgresArtifacts(db *sql.DB, n int) ([]string, int, error) {
 
 	var stmt string
 	var ids []string
