@@ -37,7 +37,7 @@ type arangoEdge struct {
 	Body string `json:"body"`
 }
 
-func initArango(endpoint, dbName string) (driver.Database, error) {
+func InitArango(endpoint, dbName string) (driver.Database, error) {
 	conn, err := http.NewConnection(http.ConnectionConfig{Endpoints: []string{endpoint}})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed connecting to arangodb")
@@ -69,7 +69,7 @@ func initArango(endpoint, dbName string) (driver.Database, error) {
 	return db, nil
 }
 
-func createArangoDocumentCollection(db driver.Database, collection string) error {
+func CreateArangoDocumentCollection(db driver.Database, collection string) error {
 
 	colExists, err := db.CollectionExists(nil, collection)
 	if err != nil {
@@ -94,7 +94,7 @@ func createArangoDocumentCollection(db driver.Database, collection string) error
 	return nil
 }
 
-func createArangoEdgeCollection(db driver.Database, collection string) error {
+func CreateArangoEdgeCollection(db driver.Database, collection string) error {
 
 	colExists, err := db.CollectionExists(nil, collection)
 	if err != nil {
@@ -147,7 +147,7 @@ func createArangoDocuments(ctx context.Context, db driver.Database, collection s
 	return keys, int(count), nil
 }
 
-func createBulkArangoDocuments(ctx context.Context, db driver.Database, collection string, n int) ([]string, int, error) {
+func CreateBulkArangoDocuments(ctx context.Context, db driver.Database, collection string, n int) ([]string, int, error) {
 
 	col, err := db.Collection(ctx, collection)
 	if err != nil {

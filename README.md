@@ -2,7 +2,7 @@
 
 Attention! The goal of the tests was to discover and measure the specific use-cases. It's not an extensive (and accurate) benchmark.
 
-Tests was performed on an empty database with default config using a computer containing **40** cores and **125G** of RAM. The document and edge structure defined for ArangoDB:
+Tests were performed on an empty database with default config using a computer containing **40** cores and **125G** of RAM. The document and edge structure defined for ArangoDB:
 
 ```go
 type arangoArtifact struct {
@@ -81,6 +81,40 @@ CREATE TABLE IF NOT EXISTS edges
 |  25 | Create 1000 direct neighbours                      | 94 ms    | 328 ms     |
 |  26 | Create 10000 direct neighbours                     | 785 ms   | 28.9 s     |
 |  27 | ↪ Query all neighbours (sorted by name)            | 354 ms   | 45 ms      |
+
+
+The following tests were performed on a pre-populated database of **1 million** entries:
+
+
+| Num | Test                                               | ArangoDB | PostgreSQL |
+|----:|----------------------------------------------------|----------|------------|
+|   1 | Create 10 entries                                  |          | 89 ms      |
+|   2 | Create 100 entries                                 |          | 81 ms      |
+|   3 | Create 1000 entries                                |          | 417 ms     |
+|   4 | Create 1000 entries (bulk)                         |          | 133 ms     |
+|   5 | Create 10000 entries (bulk)                        |          | 4.1 s      |
+|   6 | ↪ Read 10000 entries (not a query)                 |          | skipped    |
+|   7 | ↪ Read 10000 entries (not a query, bulk)           |          | skipped    |
+|   8 | ↪ Update 10000 entries                             |          | 90 s       |
+|   9 | ↪ Update 10000 entries (bulk)                      |          | 4.8 s      |
+|  10 | ↪ Read 10000 entries (using query)                 |          | 3 s        |
+|  11 | Create 10 connected [pairs](#pair)                 |          | 45 ms      |
+|  12 | Create 100 connected pairs                         |          | 72 ms      |
+|  13 | Create 10000 connected pairs                       |          | 50.2 s     |
+|  14 | ↪ Query all neighbours in pair                     |          | 51 ms      |
+|  15 | ↪ Query all neighbours in pair (within one year)   |          | 411 ms     |
+|  16 | Create chain with 10000 artifacts                  |          | 22.9 s     |
+|  17 | ↪ Query 10th artifact in [chain](#chain)           |          | 12 ms      |
+|  18 | ↪ Query 100th artifact in chain                    |          | 115 ms     |
+|  19 | ↪ Query 1000th artifact in chain                   |          | 1.1 s      |
+|  20 | ↪ Query 2000th artifact in chain                   |          | 2.2 s      |
+|  21 | ↪ Query 5000th artifact in chain                   |          | 5.9 s      |
+|  22 | ↪ Query 7000th artifact in chain                   |          | 8.1 s      |
+|  23 | ↪ Sum 5000 `item`s in chain                        |          | 5.9 s      |
+|  24 | Create 100 direct [neighbours](#direct-neighbours) |          | 53 ms      |
+|  25 | Create 1000 direct neighbours                      |          | 327 ms     |
+|  26 | Create 10000 direct neighbours                     |          | 21.5 s     |
+|  27 | ↪ Query all neighbours (sorted by name)            |          | 71 ms      |
 
 * Tests indented by ↪ depend on previous not-indented test.
 

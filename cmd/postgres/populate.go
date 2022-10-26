@@ -25,7 +25,7 @@ func run() error {
 	var n int
 	var chunk int
 
-	flag.StringVar(&postgresConnStr, "host", "postgres://user:password@localhost:5455/testdb?sslmode=disable", "connection string to PostgreSQL")
+	flag.StringVar(&postgresConnStr, "host", dbBench.PostgresConnStr, "connection string to PostgreSQL")
 	flag.IntVar(&n, "n", 1000000, "the number of entries to generate inside DB")
 	flag.IntVar(&chunk, "chunk", 10000, "maximum inserts of one bulk operation")
 	flag.Parse()

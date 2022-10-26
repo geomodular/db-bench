@@ -8,10 +8,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const (
-	postgresConnStr = "postgres://user:password@localhost:5455/testdb?sslmode=disable"
-)
-
 type postgresSuite struct {
 	suite.Suite
 
@@ -25,7 +21,7 @@ type postgresSuite struct {
 
 func (s *postgresSuite) SetupSuite() {
 
-	db, err := InitPostgres(postgresConnStr)
+	db, err := InitPostgres(PostgresConnStr)
 	s.Require().NoError(err)
 
 	err = CreatePostgresTestingTables(db)

@@ -8,11 +8,7 @@ import (
 )
 
 const (
-	arangoEndpoint               = "http://localhost:8529"
-	arangoDB                     = "testdb"
-	arangoDocumentTestCollection = "testdocumentcollection"
-	arangoEdgeTestCollection     = "testedgecollection"
-	documentCountNotToCycle      = 1000000
+	documentCountNotToCycle = 1000000
 )
 
 type arangoSuite struct {
@@ -28,17 +24,17 @@ type arangoSuite struct {
 
 func (s *arangoSuite) SetupSuite() {
 
-	db, err := initArango(arangoEndpoint, arangoDB)
+	db, err := InitArango(ArangoEndpoint, ArangoDB)
 	s.Require().NoError(err)
 
-	err = createArangoDocumentCollection(db, arangoDocumentTestCollection)
+	err = CreateArangoDocumentCollection(db, ArangoDocumentTestCollection)
 	s.Require().NoError(err)
 
-	err = createArangoEdgeCollection(db, arangoEdgeTestCollection)
+	err = CreateArangoEdgeCollection(db, ArangoEdgeTestCollection)
 	s.Require().NoError(err)
 
 	ctx := context.Background()
-	col, err := db.Collection(ctx, arangoDocumentTestCollection)
+	col, err := db.Collection(ctx, ArangoDocumentTestCollection)
 	s.Require().NoError(err)
 
 	count, err := col.Count(ctx)
@@ -54,7 +50,7 @@ func (s *arangoSuite) TearDownTest() {
 
 	if s.documentKeysToCleanNow != nil {
 
-		col, err := s.db.Collection(ctx, arangoDocumentTestCollection)
+		col, err := s.db.Collection(ctx, ArangoDocumentTestCollection)
 		s.Require().NoError(err)
 
 		_, _, err = col.RemoveDocuments(ctx, s.documentKeysToCleanNow)
@@ -65,7 +61,7 @@ func (s *arangoSuite) TearDownTest() {
 
 	if s.edgeKeysToCleanNow != nil {
 
-		col, err := s.db.Collection(ctx, arangoEdgeTestCollection)
+		col, err := s.db.Collection(ctx, ArangoEdgeTestCollection)
 		s.Require().NoError(err)
 
 		_, _, err = col.RemoveDocuments(ctx, s.edgeKeysToCleanNow)
@@ -81,7 +77,7 @@ func (s *arangoSuite) TearDownSuite() {
 
 	if s.documentKeysToCleanLater != nil {
 
-		col, err := s.db.Collection(ctx, arangoDocumentTestCollection)
+		col, err := s.db.Collection(ctx, ArangoDocumentTestCollection)
 		s.Require().NoError(err)
 
 		_, _, err = col.RemoveDocuments(ctx, s.documentKeysToCleanLater)
@@ -92,7 +88,7 @@ func (s *arangoSuite) TearDownSuite() {
 
 	if s.edgeKeysToCleanLater != nil {
 
-		col, err := s.db.Collection(ctx, arangoEdgeTestCollection)
+		col, err := s.db.Collection(ctx, ArangoEdgeTestCollection)
 		s.Require().NoError(err)
 
 		_, _, err = col.RemoveDocuments(ctx, s.edgeKeysToCleanLater)
@@ -107,7 +103,7 @@ func (s *arangoSuite) Test01_Create10() {
 	documentCount := 10
 	ctx := context.Background()
 
-	keys, count, err := createArangoDocuments(ctx, s.db, arangoDocumentTestCollection, documentCount)
+	keys, count, err := createArangoDocuments(ctx, s.db, ArangoDocumentTestCollection, documentCount)
 	s.Require().NoError(err)
 	s.EqualValues(documentCount, count-s.staticDocumentCount)
 
@@ -120,7 +116,7 @@ func (s *arangoSuite) Test02_Create100() {
 	documentCount := 100
 	ctx := context.Background()
 
-	keys, count, err := createArangoDocuments(ctx, s.db, arangoDocumentTestCollection, documentCount)
+	keys, count, err := createArangoDocuments(ctx, s.db, ArangoDocumentTestCollection, documentCount)
 	s.Require().NoError(err)
 	s.EqualValues(documentCount, count-s.staticDocumentCount)
 
@@ -133,7 +129,7 @@ func (s *arangoSuite) Test03_Create1000() {
 	documentCount := 1000
 	ctx := context.Background()
 
-	keys, count, err := createArangoDocuments(ctx, s.db, arangoDocumentTestCollection, documentCount)
+	keys, count, err := createArangoDocuments(ctx, s.db, ArangoDocumentTestCollection, documentCount)
 	s.Require().NoError(err)
 	s.EqualValues(documentCount, count-s.staticDocumentCount)
 
@@ -146,7 +142,7 @@ func (s *arangoSuite) Test04_BulkCreate1000() {
 	documentCount := 1000
 	ctx := context.Background()
 
-	keys, count, err := createBulkArangoDocuments(ctx, s.db, arangoDocumentTestCollection, documentCount)
+	keys, count, err := CreateBulkArangoDocuments(ctx, s.db, ArangoDocumentTestCollection, documentCount)
 	s.Require().NoError(err)
 	s.EqualValues(documentCount, count-s.staticDocumentCount)
 
@@ -159,7 +155,7 @@ func (s *arangoSuite) Test05_BulkCreate10000() {
 	documentCount := 10000
 	ctx := context.Background()
 
-	keys, count, err := createBulkArangoDocuments(ctx, s.db, arangoDocumentTestCollection, documentCount)
+	keys, count, err := CreateBulkArangoDocuments(ctx, s.db, ArangoDocumentTestCollection, documentCount)
 	s.Require().NoError(err)
 	s.EqualValues(documentCount, count-s.staticDocumentCount)
 
@@ -171,7 +167,7 @@ func (s *arangoSuite) Test06_Read10000() {
 
 	ctx := context.Background()
 	for _, k := range s.documentKeysToCleanLater {
-		err := readOneArangoDocument(ctx, s.db, arangoDocumentTestCollection, k)
+		err := readOneArangoDocument(ctx, s.db, ArangoDocumentTestCollection, k)
 		s.Require().NoError(err)
 	}
 }
@@ -180,7 +176,7 @@ func (s *arangoSuite) Test07_BulkRead10000() {
 
 	ctx := context.Background()
 
-	count, err := readBulkArangoDocuments(ctx, s.db, arangoDocumentTestCollection, s.documentKeysToCleanLater)
+	count, err := readBulkArangoDocuments(ctx, s.db, ArangoDocumentTestCollection, s.documentKeysToCleanLater)
 	s.Require().NoError(err)
 	s.EqualValues(len(s.documentKeysToCleanLater), count)
 }
@@ -189,7 +185,7 @@ func (s *arangoSuite) Test08_Update10000() {
 
 	ctx := context.Background()
 	for _, k := range s.documentKeysToCleanLater {
-		err := updateOneArangoDocument(ctx, s.db, arangoDocumentTestCollection, k)
+		err := updateOneArangoDocument(ctx, s.db, ArangoDocumentTestCollection, k)
 		s.Require().NoError(err)
 	}
 }
@@ -198,7 +194,7 @@ func (s *arangoSuite) Test09_BulkUpdate10000() {
 
 	ctx := context.Background()
 
-	count, err := updateBulkArangoDocuments(ctx, s.db, arangoDocumentTestCollection, s.documentKeysToCleanLater)
+	count, err := updateBulkArangoDocuments(ctx, s.db, ArangoDocumentTestCollection, s.documentKeysToCleanLater)
 	s.Require().NoError(err)
 	s.EqualValues(len(s.documentKeysToCleanLater), count)
 }
@@ -207,7 +203,7 @@ func (s *arangoSuite) Test10_QueryRead10000() {
 
 	ctx := context.Background()
 
-	count, err := queryArangoDocuments(ctx, s.db, arangoDocumentTestCollection, s.documentKeysToCleanLater)
+	count, err := queryArangoDocuments(ctx, s.db, ArangoDocumentTestCollection, s.documentKeysToCleanLater)
 	s.Require().NoError(err)
 	s.EqualValues(len(s.documentKeysToCleanLater), count)
 
@@ -219,7 +215,7 @@ func (s *arangoSuite) Test11_CreateConnectedPairs10() {
 
 	ctx := context.Background()
 
-	documentKeys, edgeKeys, documentCount, edgeCount, err := createArangoConnectedPairs(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, 10)
+	documentKeys, edgeKeys, documentCount, edgeCount, err := createArangoConnectedPairs(ctx, s.db, ArangoDocumentTestCollection, ArangoEdgeTestCollection, 10)
 	s.Require().NoError(err)
 	s.EqualValues(20, documentCount-s.staticDocumentCount)
 	s.EqualValues(10, edgeCount)
@@ -232,7 +228,7 @@ func (s *arangoSuite) Test12_CreateConnectedPairs100() {
 
 	ctx := context.Background()
 
-	documentKeys, edgeKeys, documentCount, edgeCount, err := createArangoConnectedPairs(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, 100)
+	documentKeys, edgeKeys, documentCount, edgeCount, err := createArangoConnectedPairs(ctx, s.db, ArangoDocumentTestCollection, ArangoEdgeTestCollection, 100)
 	s.Require().NoError(err)
 	s.EqualValues(200, documentCount-s.staticDocumentCount)
 	s.EqualValues(100, edgeCount)
@@ -245,7 +241,7 @@ func (s *arangoSuite) Test13_CreateConnectedPairs10000() {
 
 	ctx := context.Background()
 
-	documentKeys, edgeKeys, documentCount, edgeCount, err := createArangoConnectedPairs(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, 10000)
+	documentKeys, edgeKeys, documentCount, edgeCount, err := createArangoConnectedPairs(ctx, s.db, ArangoDocumentTestCollection, ArangoEdgeTestCollection, 10000)
 	s.Require().NoError(err)
 	s.EqualValues(20000, documentCount-s.staticDocumentCount)
 	s.EqualValues(10000, edgeCount)
@@ -262,7 +258,7 @@ func (s *arangoSuite) Test14_QueryAllConnectedPairs10000() {
 
 	ctx := context.Background()
 
-	count, err := queryAllArangoPairs(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection)
+	count, err := queryAllArangoPairs(ctx, s.db, ArangoDocumentTestCollection, ArangoEdgeTestCollection)
 	s.Require().NoError(err)
 	s.EqualValues(10000, count)
 }
@@ -274,7 +270,7 @@ func (s *arangoSuite) Test15_QueryAllConnectedPairsOneYear10000() {
 	} else {
 		ctx := context.Background()
 
-		count, err := queryAllArangoPairsOneYear(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, 2022)
+		count, err := queryAllArangoPairsOneYear(ctx, s.db, ArangoDocumentTestCollection, ArangoEdgeTestCollection, 2022)
 		s.Require().NoError(err)
 		s.EqualValues(365, count)
 	}
@@ -288,7 +284,7 @@ func (s *arangoSuite) Test15_QueryAllConnectedPairsOneYear10000() {
 func (s *arangoSuite) Test16_CreateChain1x10000() {
 	ctx := context.Background()
 
-	documentKeys, edgeKeys, documentCount, edgeCount, err := createArangoChain(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, 10000, 1)
+	documentKeys, edgeKeys, documentCount, edgeCount, err := createArangoChain(ctx, s.db, ArangoDocumentTestCollection, ArangoEdgeTestCollection, 10000, 1)
 	s.Require().NoError(err)
 	s.EqualValues(10000, documentCount-s.staticDocumentCount)
 	s.EqualValues(9999, edgeCount)
@@ -300,7 +296,7 @@ func (s *arangoSuite) Test16_CreateChain1x10000() {
 func (s *arangoSuite) Test17_QueryNeighbourInChain10() {
 	ctx := context.Background()
 
-	document, err := queryArangoNeighbourN(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, s.documentKeysToCleanLater[0], 10)
+	document, err := queryArangoNeighbourN(ctx, s.db, ArangoDocumentTestCollection, ArangoEdgeTestCollection, s.documentKeysToCleanLater[0], 10)
 	s.Require().NoError(err)
 	s.EqualValues("artifact-10", document.Name)
 	s.EqualValues(s.documentKeysToCleanLater[10], document.Key)
@@ -309,7 +305,7 @@ func (s *arangoSuite) Test17_QueryNeighbourInChain10() {
 func (s *arangoSuite) Test18_QueryNeighbourInChain100() {
 	ctx := context.Background()
 
-	document, err := queryArangoNeighbourN(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, s.documentKeysToCleanLater[0], 100)
+	document, err := queryArangoNeighbourN(ctx, s.db, ArangoDocumentTestCollection, ArangoEdgeTestCollection, s.documentKeysToCleanLater[0], 100)
 	s.Require().NoError(err)
 	s.EqualValues("artifact-100", document.Name)
 	s.EqualValues(s.documentKeysToCleanLater[100], document.Key)
@@ -318,7 +314,7 @@ func (s *arangoSuite) Test18_QueryNeighbourInChain100() {
 func (s *arangoSuite) Test19_QueryNeighbourInChain1000() {
 	ctx := context.Background()
 
-	document, err := queryArangoNeighbourN(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, s.documentKeysToCleanLater[0], 1000)
+	document, err := queryArangoNeighbourN(ctx, s.db, ArangoDocumentTestCollection, ArangoEdgeTestCollection, s.documentKeysToCleanLater[0], 1000)
 	s.Require().NoError(err)
 	s.EqualValues("artifact-1000", document.Name)
 	s.EqualValues(s.documentKeysToCleanLater[1000], document.Key)
@@ -327,7 +323,7 @@ func (s *arangoSuite) Test19_QueryNeighbourInChain1000() {
 func (s *arangoSuite) Test20_QueryNeighbourInChain2000() {
 	ctx := context.Background()
 
-	document, err := queryArangoNeighbourN(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, s.documentKeysToCleanLater[0], 2000)
+	document, err := queryArangoNeighbourN(ctx, s.db, ArangoDocumentTestCollection, ArangoEdgeTestCollection, s.documentKeysToCleanLater[0], 2000)
 	s.Require().NoError(err)
 	s.EqualValues("artifact-2000", document.Name)
 	s.EqualValues(s.documentKeysToCleanLater[2000], document.Key)
@@ -336,7 +332,7 @@ func (s *arangoSuite) Test20_QueryNeighbourInChain2000() {
 func (s *arangoSuite) Test21_QueryNeighbourInChain5000() {
 	ctx := context.Background()
 
-	document, err := queryArangoNeighbourN(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, s.documentKeysToCleanLater[0], 5000)
+	document, err := queryArangoNeighbourN(ctx, s.db, ArangoDocumentTestCollection, ArangoEdgeTestCollection, s.documentKeysToCleanLater[0], 5000)
 	s.Require().NoError(err)
 	s.EqualValues("artifact-5000", document.Name)
 	s.EqualValues(s.documentKeysToCleanLater[5000], document.Key)
@@ -345,7 +341,7 @@ func (s *arangoSuite) Test21_QueryNeighbourInChain5000() {
 func (s *arangoSuite) Test22_QueryNeighbourInChain7000() {
 	ctx := context.Background()
 
-	document, err := queryArangoNeighbourN(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, s.documentKeysToCleanLater[0], 7000)
+	document, err := queryArangoNeighbourN(ctx, s.db, ArangoDocumentTestCollection, ArangoEdgeTestCollection, s.documentKeysToCleanLater[0], 7000)
 	s.Require().NoError(err)
 	s.EqualValues("artifact-7000", document.Name)
 	s.EqualValues(s.documentKeysToCleanLater[7000], document.Key)
@@ -354,7 +350,7 @@ func (s *arangoSuite) Test22_QueryNeighbourInChain7000() {
 func (s *arangoSuite) Test23_SumChainItems5000() {
 	ctx := context.Background()
 
-	sum, err := sumArangoNeighbourNItems(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, s.documentKeysToCleanLater[0], 4999)
+	sum, err := sumArangoNeighbourNItems(ctx, s.db, ArangoDocumentTestCollection, ArangoEdgeTestCollection, s.documentKeysToCleanLater[0], 4999)
 	s.Require().NoError(err)
 	s.EqualValues(5000, sum)
 
@@ -367,7 +363,7 @@ func (s *arangoSuite) Test23_SumChainItems5000() {
 func (s *arangoSuite) Test24_CreateNeighbours100() {
 	ctx := context.Background()
 
-	documentKeys, edgeKeys, documentCount, edgeCount, err := createArangoNeighbours(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, 100)
+	documentKeys, edgeKeys, documentCount, edgeCount, err := createArangoNeighbours(ctx, s.db, ArangoDocumentTestCollection, ArangoEdgeTestCollection, 100)
 	s.Require().NoError(err)
 	s.EqualValues(100, documentCount-s.staticDocumentCount)
 	s.EqualValues(99, edgeCount)
@@ -379,7 +375,7 @@ func (s *arangoSuite) Test24_CreateNeighbours100() {
 func (s *arangoSuite) Test25_CreateNeighbours1000() {
 	ctx := context.Background()
 
-	documentKeys, edgeKeys, documentCount, edgeCount, err := createArangoNeighbours(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, 1000)
+	documentKeys, edgeKeys, documentCount, edgeCount, err := createArangoNeighbours(ctx, s.db, ArangoDocumentTestCollection, ArangoEdgeTestCollection, 1000)
 	s.Require().NoError(err)
 	s.EqualValues(1000, documentCount-s.staticDocumentCount)
 	s.EqualValues(999, edgeCount)
@@ -391,7 +387,7 @@ func (s *arangoSuite) Test25_CreateNeighbours1000() {
 func (s *arangoSuite) Test26_CreateNeighbours10000() {
 	ctx := context.Background()
 
-	documentKeys, edgeKeys, documentCount, edgeCount, err := createArangoNeighbours(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, 10000)
+	documentKeys, edgeKeys, documentCount, edgeCount, err := createArangoNeighbours(ctx, s.db, ArangoDocumentTestCollection, ArangoEdgeTestCollection, 10000)
 	s.Require().NoError(err)
 	s.EqualValues(10000, documentCount-s.staticDocumentCount)
 	s.EqualValues(9999, edgeCount)
@@ -404,7 +400,7 @@ func (s *arangoSuite) Test27_QuerySortedNeighbours10000() {
 
 	ctx := context.Background()
 
-	count, err := queryArangoSortedNeighbours(ctx, s.db, arangoDocumentTestCollection, arangoEdgeTestCollection, s.documentKeysToCleanLater[0])
+	count, err := queryArangoSortedNeighbours(ctx, s.db, ArangoDocumentTestCollection, ArangoEdgeTestCollection, s.documentKeysToCleanLater[0])
 	s.Require().NoError(err)
 	s.EqualValues(9999, count)
 }
