@@ -1,3 +1,6 @@
+# DB Bench
+
+Attention! The goal of the tests was to discover and measure the specific use-cases. It's not an extensive (and accurate) benchmark.
 
 Tests was performed on an empty database with default config using a computer containing **40** cores and **125G** of RAM. The document and edge structure defined for ArangoDB:
 
