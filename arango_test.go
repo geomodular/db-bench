@@ -400,7 +400,7 @@ func (s *arangoSuite) Test26_CreateNeighbours10000() {
 	s.edgeKeysToCleanLater = edgeKeys
 }
 
-func (s *arangoSuite) Test27_QueryArangoSortedNeighbours10000() {
+func (s *arangoSuite) Test27_QuerySortedNeighbours10000() {
 
 	ctx := context.Background()
 
