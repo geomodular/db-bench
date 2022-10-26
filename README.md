@@ -64,20 +64,20 @@ CREATE TABLE IF NOT EXISTS edges
 |   8 | Update 10000 entries                               | 12.3 s   | 84.4 s     |
 |   9 | Update 10000 entries (bulk)                        | 848 ms   | 4.9 s      |
 |  10 | Read 10000 entries (using query)                   | 328 ms   | 3 s        |
-|  11 | Create 10 connected [pairs](#Pair)                 | 7 ms     | 9 ms       |
+|  11 | Create 10 connected [pairs](#pair)                 | 7 ms     | 9 ms       |
 |  12 | Create 100 connected pairs                         | 19 ms    | 43 ms      |
 |  13 | Create 10000 connected pairs                       | 1 s      | 68.9 s     |
 |  14 | Query all neighbours in pair                       | 554 ms   | 23 ms      |
 |  15 | Query all neighbours in pair (within one year)     | 40 ms    | 10 ms      |
 |  16 | Create chain with 10000 artifacts                  | 773 ms   | 23 s       |
-|  17 | Query 10th artifact in [chain](#Chain)             | 1 ms     | 15 ms      |
+|  17 | Query 10th artifact in [chain](#chain)             | 1 ms     | 15 ms      |
 |  18 | Query 100th artifact in chain                      | 2 ms     | 127 ms     |
 |  19 | Query 1000th artifact in chain                     | 316 ms   | 1.1 s      |
 |  20 | Query 2000th artifact in chain                     | 2.5 s    | 2.2 s      |
 |  21 | Query 5000th artifact in chain                     | 40.7 s   | 5.7 s      |
 |  22 | Query 7000th artifact in chain                     | 110.7 s  | 7.8 s      |
 |  23 | Sum 5000 `item`s in chain                          | 39.9 s   | 5.6 s      |
-|  24 | Create 100 direct [neighbours](#Direct neighbours) | 18 ms    | 27 ms      |
+|  24 | Create 100 direct [neighbours](#direct-neighbours) | 18 ms    | 27 ms      |
 |  25 | Create 1000 direct neighbours                      | 94 ms    | 328 ms     |
 |  26 | Create 10000 direct neighbours                     | 785 ms   | 28.9 s     |
 |  27 | Query all neighbours (sorted by name)              | 354 ms   | 45 ms      |
