@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS edges
 |  26 | Create 10000 direct neighbours                     | 785 ms   | 28.9 s     |
 |  27 | ↪ Query all neighbours (sorted by name)            | 354 ms   | 45 ms      |
 
-* Tests indented by `↪` depend on previous not-indented test.
+* Tests indented by ↪ depend on previous not-indented test.
 
 ### Pair
 
