@@ -88,33 +88,33 @@ The following tests were performed on a pre-populated database of **1 million** 
 
 | Num | Test                                               | ArangoDB | PostgreSQL |
 |----:|----------------------------------------------------|----------|------------|
-|   1 | Create 10 entries                                  |          | 89 ms      |
-|   2 | Create 100 entries                                 |          | 81 ms      |
-|   3 | Create 1000 entries                                |          | 417 ms     |
-|   4 | Create 1000 entries (bulk)                         |          | 133 ms     |
-|   5 | Create 10000 entries (bulk)                        |          | 4.1 s      |
-|   6 | ↪ Read 10000 entries (not a query)                 |          | skipped    |
-|   7 | ↪ Read 10000 entries (not a query, bulk)           |          | skipped    |
-|   8 | ↪ Update 10000 entries                             |          | 90 s       |
-|   9 | ↪ Update 10000 entries (bulk)                      |          | 4.8 s      |
-|  10 | ↪ Read 10000 entries (using query)                 |          | 3 s        |
-|  11 | Create 10 connected [pairs](#pair)                 |          | 45 ms      |
-|  12 | Create 100 connected pairs                         |          | 72 ms      |
-|  13 | Create 10000 connected pairs                       |          | 50.2 s     |
-|  14 | ↪ Query all neighbours in pair                     |          | 51 ms      |
-|  15 | ↪ Query all neighbours in pair (within one year)   |          | 411 ms     |
-|  16 | Create chain with 10000 artifacts                  |          | 22.9 s     |
-|  17 | ↪ Query 10th artifact in [chain](#chain)           |          | 12 ms      |
-|  18 | ↪ Query 100th artifact in chain                    |          | 115 ms     |
-|  19 | ↪ Query 1000th artifact in chain                   |          | 1.1 s      |
-|  20 | ↪ Query 2000th artifact in chain                   |          | 2.2 s      |
-|  21 | ↪ Query 5000th artifact in chain                   |          | 5.9 s      |
-|  22 | ↪ Query 7000th artifact in chain                   |          | 8.1 s      |
-|  23 | ↪ Sum 5000 `item`s in chain                        |          | 5.9 s      |
-|  24 | Create 100 direct [neighbours](#direct-neighbours) |          | 53 ms      |
-|  25 | Create 1000 direct neighbours                      |          | 327 ms     |
-|  26 | Create 10000 direct neighbours                     |          | 21.5 s     |
-|  27 | ↪ Query all neighbours (sorted by name)            |          | 71 ms      |
+|   1 | Create 10 entries                                  | 9 ms     | 89 ms      |
+|   2 | Create 100 entries                                 | 77 ms    | 81 ms      |
+|   3 | Create 1000 entries                                | 805 ms   | 417 ms     |
+|   4 | Create 1000 entries (bulk)                         | 49 ms    | 133 ms     |
+|   5 | Create 10000 entries (bulk)                        | 421 ms   | 4.1 s      |
+|   6 | ↪ Read 10000 entries (not a query)                 | 9.5 s    | skipped    |
+|   7 | ↪ Read 10000 entries (not a query, bulk)           | 266 ms   | skipped    |
+|   8 | ↪ Update 10000 entries                             | 12.2 s   | 90 s       |
+|   9 | ↪ Update 10000 entries (bulk)                      | 983 ms   | 4.8 s      |
+|  10 | ↪ Read 10000 entries (using query)                 | 331 ms   | 3 s        |
+|  11 | Create 10 connected [pairs](#pair)                 | 5 ms     | 45 ms      |
+|  12 | Create 100 connected pairs                         | 16 ms    | 72 ms      |
+|  13 | Create 10000 connected pairs                       | 1 s      | 50.2 s     |
+|  14 | ↪ Query all neighbours in pair                     | 4.1 s    | 51 ms      |
+|  15 | ↪ Query all neighbours in pair (within one year)   | 4.4 s    | 411 ms     |
+|  16 | Create chain with 10000 artifacts                  | 770 ms   | 22.9 s     |
+|  17 | ↪ Query 10th artifact in [chain](#chain)           | 1 ms     | 12 ms      |
+|  18 | ↪ Query 100th artifact in chain                    | 2 ms     | 115 ms     |
+|  19 | ↪ Query 1000th artifact in chain                   | 387 ms   | 1.1 s      |
+|  20 | ↪ Query 2000th artifact in chain                   | 2.5 s    | 2.2 s      |
+|  21 | ↪ Query 5000th artifact in chain                   | 39.2 s   | 5.9 s      |
+|  22 | ↪ Query 7000th artifact in chain                   | 108.1 s  | 8.1 s      |
+|  23 | ↪ Sum 5000 `item`s in chain                        | 40.1 s   | 5.9 s      |
+|  24 | Create 100 direct [neighbours](#direct-neighbours) | 19 ms    | 53 ms      |
+|  25 | Create 1000 direct neighbours                      | 96 ms    | 327 ms     |
+|  26 | Create 10000 direct neighbours                     | 825 ms   | 21.5 s     |
+|  27 | ↪ Query all neighbours (sorted by name)            | 338 ms   | 71 ms      |
 
 * Tests indented by ↪ depend on previous not-indented test.
 
