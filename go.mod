@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/arangodb/go-driver v1.4.0
+	github.com/neo4j/neo4j-go-driver/v4 v4.4.4
 	github.com/google/uuid v1.1.1
 	github.com/lib/pq v1.10.7
 	github.com/pkg/errors v0.9.1
