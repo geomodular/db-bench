@@ -100,7 +100,7 @@ func bulkCreateEntities(db neo4j.Session, count int) (created int, err error) {
 func readMultipleEntities(db neo4j.Session, count int) (retrieved int, err error) {
 	var nameList []string = make([]string, count)
 	for i := range nameList {
-		nameList[i] = getName(i)
+		nameList[i] = fmt.Sprintf("new-name-%d", i)
 	}
 
 	var entry map[string]interface{} = map[string]interface{}{"names": nameList}
@@ -117,13 +117,19 @@ func readMultipleEntities(db neo4j.Session, count int) (retrieved int, err error
 		return
 	}
 
-	for cursor.Next() {
-		record := cursor.Record()
+	retrieved = readAllFromCursor(cursor)
+	return
+}
+
+func readAllFromCursor(c neo4j.Result) int {
+	retrieved := 0
+	for c.Next() {
+		record := c.Record()
 		_ = record.Values[0]
 		retrieved++
 	}
 
-	return
+	return retrieved
 }
 
 func updateOneEntity(db neo4j.Session, id int) error {
@@ -131,12 +137,10 @@ func updateOneEntity(db neo4j.Session, id int) error {
 	i := rand.Intn(1000)
 	params := map[string]interface{}{
 		"key":         key,
-		"name":        fmt.Sprintf("new-name-%d", i),
 		"description": fmt.Sprintf("new-description-%d", i),
 	}
 	_, err := db.Run(`
 		MATCH (e:Entity {name: $key})
-		SET e.name = $name
 		SET e.description = $description`,
 		params,
 	)
@@ -147,11 +151,10 @@ func bulkUpdateEntities(db neo4j.Session, count int) (updated int, err error) {
 	var updateList []map[string]interface{} = make([]map[string]interface{}, count)
 	for i := range updateList {
 		key := getName(i)
-		id := rand.Intn(1000)
 		updateList[i] = map[string]interface{}{
 			"key":         key,
-			"name":        fmt.Sprintf("new-name-%d", id),
-			"description": fmt.Sprintf("new-description-%d", id),
+			"name":        fmt.Sprintf("new-name-%d", i),
+			"description": fmt.Sprintf("new-description-%d", i),
 		}
 	}
 
@@ -174,7 +177,7 @@ func bulkUpdateEntities(db neo4j.Session, count int) (updated int, err error) {
 	return
 }
 
-func createConnectedPair(db neo4j.Session, first int, second int, created time.Time) error {
+func createConnectedPair(tx neo4j.Transaction, first int, second int, created time.Time) error {
 	entity1 := neo4jEntity{
 		Name:        getName(first),
 		Description: getDescription(first),
@@ -194,7 +197,7 @@ func createConnectedPair(db neo4j.Session, first int, second int, created time.T
 		"relation": relation.toStruct(),
 	}
 
-	_, err := db.Run(`
+	_, err := tx.Run(`
 		CREATE (x:Entity $entity1)
 		CREATE (y:Entity $entity2)
 		CREATE (x)-[:RELATED $relation]->(y)`,
@@ -205,11 +208,20 @@ func createConnectedPair(db neo4j.Session, first int, second int, created time.T
 }
 
 func createConnectedPairs(db neo4j.Session, count int) (created int, err error) {
-	startDate := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
-	for i := 0; i < count*2; i = i + 2 {
-		err = createConnectedPair(db, i, i+1, startDate)
-		startDate = startDate.AddDate(0, 0, 1)
-		created++
-	}
+	_, err = db.WriteTransaction(func(tx neo4j.Transaction) (res interface{}, err error) {
+		startDate := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+		for i := 0; i < count*2; i = i + 2 {
+			err = createConnectedPair(tx, i, i+1, startDate)
+			if err != nil {
+				return
+			}
+
+			startDate = startDate.AddDate(0, 0, 1)
+			created++
+		}
+
+		return
+	})
+
 	return
 }

@@ -10,8 +10,9 @@ import (
 type neo4jSuite struct {
 	suite.Suite
 
-	driver  neo4j.Driver
-	session neo4j.Session
+	driver      neo4j.Driver
+	session     neo4j.Session
+	keepRecords bool
 }
 
 func (s *neo4jSuite) SetupSuite() {
@@ -24,12 +25,18 @@ func (s *neo4jSuite) SetupSuite() {
 }
 
 func (s *neo4jSuite) TearDownTest() {
-	// s.session.Run("MATCH (n: Entity) DETACH DELETE n", make(map[string]interface{}))
+	if !s.keepRecords {
+		s.session.Run("MATCH (n: Entity) DETACH DELETE n", make(map[string]interface{}))
+	}
 }
 
 func (s *neo4jSuite) TearDownSuite() {
 	s.session.Close()
 	s.driver.Close()
+}
+
+func (s *neo4jSuite) HandleStats(suiteName string, stats *suite.SuiteInformation) {
+	printStats(s.T(), suiteName, stats)
 }
 
 func (s *neo4jSuite) Test01_Create10() {
@@ -83,6 +90,7 @@ func (s *neo4jSuite) Test04_BulkCreate1000() {
 func (s *neo4jSuite) Test05_BulkCreate10000() {
 	// Arrange
 	expectedCount := 10000
+	s.keepRecords = true
 
 	// Act
 	createdCount, err := bulkCreateEntities(s.session, expectedCount)
@@ -101,11 +109,8 @@ func (s *neo4jSuite) Test07_BulkRead10000() {
 }
 
 func (s *neo4jSuite) Test08_Update10000() {
-	s.T().Skip("Too slow!")
 	// Arrange
-	expectedCount := 1000
-	_, err := bulkCreateEntities(s.session, expectedCount)
-	s.Require().NoError(err)
+	expectedCount := 10000
 
 	// Act & Assert no errors
 	for i := 0; i < expectedCount; i++ {
@@ -115,11 +120,8 @@ func (s *neo4jSuite) Test08_Update10000() {
 }
 
 func (s *neo4jSuite) Test09_BulkUpdate10000() {
-	s.T().Skip("Too slow!")
 	// Arrange
 	expectedCount := 10000
-	_, err := bulkCreateEntities(s.session, expectedCount)
-	s.Require().NoError(err)
 
 	// Act
 	updated, err := bulkUpdateEntities(s.session, expectedCount)
@@ -132,8 +134,7 @@ func (s *neo4jSuite) Test09_BulkUpdate10000() {
 func (s *neo4jSuite) Test10_Read10000() {
 	// Arrange
 	expectedCount := 10000
-	_, err := bulkCreateEntities(s.session, expectedCount)
-	s.Require().NoError(err)
+	s.keepRecords = false
 
 	// Act
 	retrieved, err := readMultipleEntities(s.session, expectedCount)
@@ -153,6 +154,58 @@ func (s *neo4jSuite) Test11_CreateConnectedPairs10() {
 	// Assert
 	s.Require().NoError(err)
 	s.Require().Equal(expectedCount, created)
+}
+
+func (s *neo4jSuite) Test12_CreateConnectedPairs100() {
+	// Arrange
+	expectedCount := 100
+
+	// Act
+	created, err := createConnectedPairs(s.session, expectedCount)
+
+	// Assert
+	s.Require().NoError(err)
+	s.Require().Equal(expectedCount, created)
+}
+
+func (s *neo4jSuite) Test13_CreateConnectedPairs10000() {
+	// Arrange
+	expectedCount := 10000
+	s.keepRecords = true
+
+	// Act
+	created, err := createConnectedPairs(s.session, expectedCount)
+
+	// Assert
+	s.Require().NoError(err)
+	s.Require().Equal(expectedCount, created)
+}
+
+func (s *neo4jSuite) Test14_QueryAllConnectedPairs10000() {
+	// Arrange
+	expected := 10000
+
+	// Act
+	c, err := s.session.Run("MATCH (x:Entity)-[:RELATED]->(y:Entity) RETURN x", map[string]interface{}{})
+
+	// Assert
+	s.Require().NoError(err)
+	retrieved := readAllFromCursor(c)
+	s.Require().Equal(expected, retrieved)
+}
+
+func (s *neo4jSuite) Test15_QueryAllConnectedPairsOneYear10000() {
+	// Arrange
+	s.keepRecords = false
+	expected := 365
+
+	// Act
+	c, err := s.session.Run("MATCH (x:Entity)-[:RELATED]->(y:Entity) WHERE x.create_time > $lower AND x.create_time < $upper RETURN x", map[string]interface{}{"lower": "2022", "upper": "2023"})
+
+	// Assert
+	s.Require().NoError(err)
+	retrieved := readAllFromCursor(c)
+	s.Require().Equal(expected, retrieved)
 }
 
 func TestNeo4jSuite(t *testing.T) {
