@@ -52,35 +52,35 @@ CREATE TABLE IF NOT EXISTS edges
 )
 ```
 
-| Num | Test                                               | ArangoDB | PostgreSQL |
-|----:|----------------------------------------------------|----------|------------|
-|   1 | Create 10 entries                                  | 10 ms    | 15 ms      |
-|   2 | Create 100 entries                                 | 84 ms    | 41 ms      |
-|   3 | Create 1000 entries                                | 690 ms   | 334 ms     |
-|   4 | Create 1000 entries (bulk)                         | 45 ms    | 93ms       |
-|   5 | Create 10000 entries (bulk)                        | 401 ms   | 4.2 s      |
-|   6 | ↪ Read 10000 entries (not a query)                 | 10 s     | skipped    |
-|   7 | ↪ Read 10000 entries (not a query, bulk)           | 257 ms   | skipped    |
-|   8 | ↪ Update 10000 entries                             | 12.3 s   | 84.4 s     |
-|   9 | ↪ Update 10000 entries (bulk)                      | 848 ms   | 4.9 s      |
-|  10 | ↪ Read 10000 entries (using query)                 | 328 ms   | 3 s        |
-|  11 | Create 10 connected [pairs](#pair)                 | 7 ms     | 9 ms       |
-|  12 | Create 100 connected pairs                         | 19 ms    | 43 ms      |
-|  13 | Create 10000 connected pairs                       | 1 s      | 68.9 s     |
-|  14 | ↪ Query all neighbours in pair                     | 554 ms   | 23 ms      |
-|  15 | ↪ Query all neighbours in pair (within one year)   | 40 ms    | 10 ms      |
-|  16 | Create chain with 10000 artifacts                  | 773 ms   | 23 s       |
-|  17 | ↪ Query 10th artifact in [chain](#chain)           | 1 ms     | 15 ms      |
-|  18 | ↪ Query 100th artifact in chain                    | 2 ms     | 127 ms     |
-|  19 | ↪ Query 1000th artifact in chain                   | 316 ms   | 1.1 s      |
-|  20 | ↪ Query 2000th artifact in chain                   | 2.5 s    | 2.2 s      |
-|  21 | ↪ Query 5000th artifact in chain                   | 40.7 s   | 5.7 s      |
-|  22 | ↪ Query 7000th artifact in chain                   | 110.7 s  | 7.8 s      |
-|  23 | ↪ Sum 5000 `item`s in chain                        | 39.9 s   | 5.6 s      |
-|  24 | Create 100 direct [neighbours](#direct-neighbours) | 18 ms    | 27 ms      |
-|  25 | Create 1000 direct neighbours                      | 94 ms    | 328 ms     |
-|  26 | Create 10000 direct neighbours                     | 785 ms   | 28.9 s     |
-|  27 | ↪ Query all neighbours (sorted by name)            | 354 ms   | 45 ms      |
+| Num | Test                                               | ArangoDB | PostgreSQL | Neo4j   |
+| --: | -------------------------------------------------- | -------- | ---------- | ------- |
+|   1 | Create 10 entries                                  | 10 ms    | 15 ms      | 195 ms  |
+|   2 | Create 100 entries                                 | 84 ms    | 41 ms      | 715 ms  |
+|   3 | Create 1000 entries                                | 690 ms   | 334 ms     | 1.414 s |
+|   4 | Create 1000 entries (bulk)                         | 45 ms    | 93ms       | 91 ms   |
+|   5 | Create 10000 entries (bulk)                        | 401 ms   | 4.2 s      | 63 ms   |
+|   6 | ↪ Read 10000 entries (not a query)                 | 10 s     | skipped    | skipped |
+|   7 | ↪ Read 10000 entries (not a query, bulk)           | 257 ms   | skipped    | skipped |
+|   8 | ↪ Update 10000 entries                             | 12.3 s   | 84.4 s     | 64.1 s  |
+|   9 | ↪ Update 10000 entries (bulk)                      | 848 ms   | 4.9 s      | 25.6 s  |
+|  10 | ↪ Read 10000 entries (using query)                 | 328 ms   | 3 s        | 318 ms  |
+|  11 | Create 10 connected [pairs](#pair)                 | 7 ms     | 9 ms       | 437 ms  |
+|  12 | Create 100 connected pairs                         | 19 ms    | 43 ms      | 247 ms  |
+|  13 | Create 10000 connected pairs                       | 1 s      | 68.9 s     | 13.7 s  |
+|  14 | ↪ Query all neighbours in pair                     | 554 ms   | 23 ms      | 394 ms  |
+|  15 | ↪ Query all neighbours in pair (within one year)   | 40 ms    | 10 ms      | 77 ms   |
+|  16 | Create chain with 10000 artifacts                  | 773 ms   | 23 s       | N/A     |
+|  17 | ↪ Query 10th artifact in [chain](#chain)           | 1 ms     | 15 ms      | N/A     |
+|  18 | ↪ Query 100th artifact in chain                    | 2 ms     | 127 ms     | N/A     |
+|  19 | ↪ Query 1000th artifact in chain                   | 316 ms   | 1.1 s      | N/A     |
+|  20 | ↪ Query 2000th artifact in chain                   | 2.5 s    | 2.2 s      | N/A     |
+|  21 | ↪ Query 5000th artifact in chain                   | 40.7 s   | 5.7 s      | N/A     |
+|  22 | ↪ Query 7000th artifact in chain                   | 110.7 s  | 7.8 s      | N/A     |
+|  23 | ↪ Sum 5000 `item`s in chain                        | 39.9 s   | 5.6 s      | N/A     |
+|  24 | Create 100 direct [neighbours](#direct-neighbours) | 18 ms    | 27 ms      | N/A     |
+|  25 | Create 1000 direct neighbours                      | 94 ms    | 328 ms     | N/A     |
+|  26 | Create 10000 direct neighbours                     | 785 ms   | 28.9 s     | N/A     |
+|  27 | ↪ Query all neighbours (sorted by name)            | 354 ms   | 45 ms      | N/A     |
 
 
 The following tests were performed on a pre-populated database of **1 million** entries:
@@ -156,5 +156,5 @@ Nn = Nth node in a chain.
            |____|
 
 N  = Node (document/artifact).
-Nn = Nth direct neighbour. 
+Nn = Nth direct neighbour.
 ```
